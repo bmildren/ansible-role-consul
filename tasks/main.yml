@@ -1,0 +1,20 @@
+---
+- include: setvars.yml
+  tags:
+    - consul
+    - dnsmasq
+
+- block:
+
+  - include: users.yml
+    tags: consul
+  - include: dir.yml
+  - include: config.yml
+  - include: install.yml
+  - include: tags.yml
+    when: consul_is_server and not consul_using_physical_host
+
+  when: not consul_uninstall
+
+- include: uninstall.yml
+  when: consul_uninstall

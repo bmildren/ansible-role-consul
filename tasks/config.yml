@@ -1,0 +1,55 @@
+---
+- block:
+
+  - name: consul | configure | create consul upstart config
+    template:
+      src: consul.conf.j2
+      dest: /etc/init/consul.conf
+      owner: "{{ consul_user }}"
+      group: "{{ consul_group }}"
+      mode: 0640
+
+  - name: consul | configure | copy consul agent ({{ consul_install_type }}) config
+    template:
+      src: agent.json.j2
+      dest: "{{ consul_config_dir }}/agent.json"
+      owner: "{{ consul_user }}"
+      group: "{{ consul_group }}"
+      mode: 0640
+    notify:
+      - restart consul
+
+  - name: consul | configure | copy bash profile with consul env variables
+    template:
+      src: consul_env.sh.j2
+      dest: /etc/profile.d/consul_env.sh
+      owner: root
+      group: root
+      mode: 0644
+
+  tags: consul
+
+- block:
+
+  - name: consul | configure | create dnsmasq config
+    template:
+      src: dnsmasq.conf.j2
+      dest: /etc/dnsmasq.conf
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - restart dnsmasq
+
+  - name: consul | configure | create dnsmasq consul config
+    template:
+      src: dnsmasq.consul.conf.j2
+      dest: /etc/dnsmasq.d/10-consul
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - restart dnsmasq
+
+  when: consul_manage_dnsmasq
+  tags: dnsmasq

@@ -1,0 +1,45 @@
+---
+- block:
+
+  - name: consul | uninstall | stop consul service
+    service:
+      name: dnsmasq
+      state: stopped
+
+  - name: consul | uninstall | uninstall dnsmasq package
+    apt:
+      name: dnsmasq
+      purge: yes
+      state: absent
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+
+  when: consul_manage_dnsmasq
+  tags: dnsmasq
+
+- block:
+
+  - name: consul | uninstall | stop consul service
+    service:
+      name: consul
+      state: stopped
+
+  - name: consul | uninstall | remove symlink
+    file:
+      dest: /usr/local/bin/consul
+      state: absent
+
+  - name: consul | uninstall | uninstall packages required by consul
+    apt:
+      name: "{{ item }}"
+      state: present
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+    with_items:
+      - "{{ consul_required_packages }}"
+    when: consul_uninstall_remove_all
+
+  tags: consul
+
+- include: dir.yml
+- include: users.yml

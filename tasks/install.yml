@@ -1,0 +1,73 @@
+---
+- block:
+
+  - name: consul | install | update apt cache
+    apt:
+      update_cache: yes
+      cache_valid_time: 14400
+    changed_when: False
+
+  - name: consul | install | install packages required by consul
+    apt:
+      name: "{{ item }}"
+      state: present
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+    with_items:
+      - "{{ consul_required_packages }}"
+
+  - name: consul | install | force download
+    file:
+      path: "{{ consul_installed_file }}"
+      state: absent
+    when: consul_upgrade_if_older_version
+
+  - name: consul | install | download and unpack consul
+    unarchive:
+      remote_src: yes
+      src: "{{ consul_src }}"
+      dest: "{{ consul_install_dir }}"
+      group: "{{ consul_group }}"
+      owner: "{{ consul_user }}"
+      creates: "{{ consul_installed_file }}"
+    register: consul_install
+
+  - name: consul | install | create installed file
+    file:
+      path: "{{ consul_installed_file }}"
+      state: touch
+    when: consul_install.changed
+    notify:
+      - restart consul
+
+  - name: consul | install | create symlink
+    file:
+      src: "{{ consul_install_dir }}/consul"
+      dest: /usr/local/bin/consul
+      group: "{{ consul_group }}"
+      owner: "{{ consul_user }}"
+      state: link
+
+  - name: consul | install | start consul service
+    service:
+      name: consul
+      state: "{{ consul_service_state }}"
+
+  tags: consul
+
+- block:
+
+  - name: consul | install | install dnsmasq package
+    apt:
+      name: dnsmasq
+      state: present
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+
+  - name: consul | install | start dnsmasq service
+    service:
+      name: dnsmasq
+      state: "{{ consul_service_state }}"
+
+  when: consul_manage_dnsmasq
+  tags: dnsmasq

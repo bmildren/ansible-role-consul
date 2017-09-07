@@ -1,0 +1,24 @@
+---
+- name: consul | users | create group for consul
+  group:
+    name: "{{ consul_group }}"
+    system: yes
+    state: present
+  when: not consul_uninstall
+
+- name: consul | users | manage user for consul
+  user:
+    name: "{{ consul_user }}"
+    system: yes
+    group: "{{ consul_group }}"
+    comment: "Consul Service"
+    home: "{{ consul_home_dir }}"
+    shell: /usr/sbin/nologin
+    state: "{{ consul_install_state | default('present') }}"
+
+- name: consul | users | remove consul group
+  group:
+    name: "{{ consul_group }}"
+    system: yes
+    state: absent
+  when: consul_uninstall

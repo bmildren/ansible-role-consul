@@ -1,0 +1,37 @@
+{% set join_servers = [] -%}
+
+{% if consul_create_image %}
+  {%- set _ = join_servers.append("< image placeholder >") -%}
+{% elif consul_test_role %}
+  {%- set _ = join_servers.append(hostvars[inventory_hostname]['ansible_eth0']['ipv4']['address']) -%}
+{% else %}
+  {%- for host in groups['consul'] %}
+    {%- set _ = join_servers.append(hostvars[host]['ansible_eth0']['ipv4']['address']) -%}
+  {% endfor -%}
+{% endif %}
+
+{
+  {% if consul_is_server -%}
+  "server": true,
+  "bootstrap_expect": {{ consul_bootstrap_expect }},
+  "start_join": ["{{ join_servers|join('", "') }}"],
+  {% endif -%}
+  {%- if not consul_is_server -%}
+  "retry_join": ["{{ join_servers|join('", "') }}"],
+  {% endif -%}
+  {%- if consul_is_server or ('admin' in group_names) -%}
+  "ui": true,
+  {% endif -%}
+  "datacenter": "{{ consul_datacenter }}",
+  "bind_addr": "{{ '< image placeholder >' if consul_create_image else consul_bind_address }}",
+  "client_addr": "{{ consul_client_addr }}",
+  "data_dir": "{{ consul_data_dir }}",
+  "log_level": "{{ consul_log_level }}",
+  "ports": {
+    "server": {{ consul_server_port }},
+    "serf_lan": {{ consul_serf_lan }},
+    "serf_wan": {{ consul_serf_wan }},
+    "http": {{ consul_http_port }},
+    "dns": {{ consul_dns_server_port }}
+  }
+}

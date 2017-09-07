@@ -1,0 +1,21 @@
+{% if not consul_dnsmasq_allow_short_names -%}
+domain-needed
+{%- endif %}
+{% if not consul_dnsmasq_forward_all_reverse_lookups -%}
+bogus-priv
+{%- endif %}
+{% if not consul_dnsmasq_use_resolv_conf -%}
+no-resolv
+{%- endif %}
+{% if not consul_dnsmasq_poll_resolv_conf -%}
+no-poll
+{%- endif %}
+{% if not consul_dnsmasq_use_local_hostfile -%}
+no-hosts
+{%- endif %}
+addn-hosts={{ consul_dnsmasq_additional_hostfile }}
+local-ttl={{ consul_dnsmasq_local_ttl }}
+{% if consul_dnsmasq_log_queries -%}
+log-queries
+{%- endif %}
+conf-dir={{ consul_dnsmasq_conf_dir }}

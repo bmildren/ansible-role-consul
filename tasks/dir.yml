@@ -1,0 +1,59 @@
+---
+- block:
+
+  - name: consul | dir | create consul directories
+    file:
+      state: "{{ consul_install_state | default('directory') }}"
+      path: "{{ item }}"
+      group: "{{ consul_group }}"
+      owner: "{{ consul_user }}"
+      mode: 0755
+    with_items:
+      - "{{ consul_home_dir }}"
+      - "{{ consul_home_dir }}/bin"
+      - "{{ consul_home_dir }}/cert"
+      - "{{ consul_data_dir }}"
+      - "{{ consul_config_dir }}"
+
+  - name: consul | dir | create consul log directory
+    file:
+      state: "{{ consul_install_state | default('directory') }}"
+      path: "{{ consul_log_dir }}"
+      group: "{{ consul_group }}"
+      owner: "{{ consul_user }}"
+      mode: 0755
+    when: consul_log_dir != '/var/log'
+
+  - name: consul | dir | create consul log file
+    file:
+      path: "{{ consul_log_dir }}/consul.log"
+      group: "{{ consul_group }}"
+      owner: "{{ consul_user }}"
+      state: touch
+    register: touch_status
+    changed_when: touch_status.diff.before.state != "file"
+    when: not consul_uninstall
+
+  tags: consul
+
+- block:
+
+  - name: consul | dir | create dnsmasq config directory
+    file:
+      state: "{{ consul_install_state | default('directory') }}"
+      path: /etc/dnsmasq.d
+      group: root
+      owner: root
+      mode: 0755
+
+  - name: consul | dir | create dnsmasq additional hostfile
+    file:
+      path: "{{ consul_dnsmasq_additional_hostfile }}"
+      group: root
+      owner: root
+      state: touch
+    register: touch_status
+    changed_when: touch_status.diff.before.state != "file"
+
+  when: consul_manage_dnsmasq
+  tags: dnsmasq

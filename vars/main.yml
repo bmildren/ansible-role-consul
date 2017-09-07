@@ -1,0 +1,12 @@
+---
+### percona required packages
+consul_required_packages:
+  - unzip
+
+consul_archive: "consul_{{ consul_version }}_linux_amd64.zip"
+consul_src: "{{ consul_download_src }}/{{ consul_version }}/{{ consul_archive }}"
+consul_install_dir: "{{ consul_home_dir }}/bin"
+consul_installed_file: "{{ consul_install_dir }}_installed"
+
+consul_command_line_flags:
+  - '-config-dir="{{ consul_config_dir }}"'

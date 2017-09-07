@@ -1,0 +1,45 @@
+---
+### Consul Installation
+consul_create_image: "{{ global_create_image | default(false) }}"
+consul_test_role: false
+consul_download_src: https://releases.hashicorp.com/consul
+consul_version: 0.8.1
+consul_upgrade_if_older_version: false
+consul_uninstall: false
+consul_uninstall_remove_all: false
+consul_is_server: false
+consul_using_physical_host: false
+
+consul_user: "{{ global_sd_user | default('consul') }}"
+consul_group: "{{ global_sd_group | default('consul') }}"
+
+consul_download_folder: /tmp
+consul_home_dir: /opt/consul
+consul_data_dir: "{{ consul_home_dir }}/data"
+consul_config_dir: /etc/consul.d
+consul_log_dir: /var/log/consul
+
+### Consul Options
+consul_datacenter: dc1
+consul_bootstrap_expect: 3
+consul_bootstrap_expect_override: true
+consul_bind_address: "{{ ansible_default_ipv4.address }}"
+consul_client_addr: 0.0.0.0
+consul_log_level: INFO
+consul_server_port: 8300
+consul_serf_lan: 8301
+consul_serf_wan: 8302
+consul_http_port: 8500
+consul_dns_server_port: 8600
+
+### DNSMasq Options
+consul_manage_dnsmasq: true
+consul_dnsmasq_allow_short_names: true
+consul_dnsmasq_forward_all_reverse_lookups: true
+consul_dnsmasq_use_resolv_conf: true
+consul_dnsmasq_poll_resolv_conf: true
+consul_dnsmasq_use_local_hostfile: true
+consul_dnsmasq_additional_hostfile: /etc/dnsmasq.hosts
+consul_dnsmasq_local_ttl: 10
+consul_dnsmasq_log_queries: false
+consul_dnsmasq_conf_dir: /etc/dnsmasq.d

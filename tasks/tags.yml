@@ -1,0 +1,29 @@
+---
+- block:
+
+  - name: consul | tags | get droplet id
+    uri:
+      url: http://169.254.169.254/metadata/v1/id
+      return_content: yes
+    register: consul_droplet_id
+    changed_when: False
+
+  - name: consul | tags | add deployed tag
+    local_action: digital_ocean_tag
+    args:
+      name: deployed
+      resource_type: droplet
+      resource_id: "{{ consul_droplet_id.content }}"
+      state: present
+
+  - name: consul | tags | remove provisioned tag
+    local_action: digital_ocean_tag
+    args:
+      name: provisioned
+      resource_type: droplet
+      resource_id: "{{ consul_droplet_id.content }}"
+      state: absent
+
+  become: False
+  when: not consul_create_image
+  tags: consul

@@ -1,0 +1,30 @@
+---
+- name: consul | setvars | get facts of consul servers
+  setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  with_items:
+    - "{{ groups['consul'] }}"
+  when: "'consul' in groups and 'ansible_eth0' not in hostvars[item] and not consul_create_image"
+
+- block:
+
+  - name: consul | setvars | set if this is a client or server install
+    set_fact:
+      consul_install_type: "{{ consul_is_server | ternary('server', 'client') }}"
+
+  - name: consul | setvars | update consul_bootstrap_expect to equal nodes in consul group
+    set_fact:
+      consul_bootstrap_expect: "{{ groups['consul'] | length }}"
+    when: "'consul' in group_names and consul_bootstrap_expect_override"
+
+  - name: consul | setvars | ensure service is stopped for imaging
+    set_fact:
+      consul_service_state: "{{ consul_create_image | ternary('stopped', 'started') }}"
+
+  when: not consul_uninstall
+
+- name: consul | setvars | uninstall users
+  set_fact:
+    consul_install_state: absent
+  when: consul_uninstall
